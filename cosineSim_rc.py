@@ -316,19 +316,18 @@ class ResistanceClassification:
         #       plots of original data, low pass filtered data and peak selection
 
         peakList, timeList, peakIdx = self.detectPeaks(dataMat, mpd=90)
-        return len(peakList)
         # plot raw data
         plt.figure()
-        plt.title(filename + ' ' + classname(clsNum) + ' : ' + str(clsNum))
-        plt.xlabel('Time')
-        plt.ylabel('Acceleration Data')
+        plt.title(self.getclassname(clsNum))
+        plt.xlabel('Time (s)')
+        plt.ylabel('Filtered Acceleration Data (g)')
         sx, = plt.plot(self.shiftTime(dataMat[0,:]), dataMat[1,:], 'r-')  
         sy, = plt.plot(self.shiftTime(dataMat[0,:]), dataMat[2,:], 'b-')
         sz, = plt.plot(self.shiftTime(dataMat[0,:]), dataMat[3,:], 'g-')
         plt.plot(timeList, peakList, 'k*')
         plt.legend([sx, sy, sz], ['X', 'Y', 'Z'], bbox_to_anchor=(1.01, 1), loc=2, borderaxespad=0., prop={'size':8})
         plt.grid(True)
-        #plt.savefig(filename + '_' + classname(clsNum) + '.png')
+        plt.savefig(filename + '_' + self.getclassname(clsNum) + '.eps')
         #plt.show()
         return len(peakList)
 

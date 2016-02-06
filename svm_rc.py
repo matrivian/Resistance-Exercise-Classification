@@ -329,7 +329,7 @@ class ResistanceClassification:
             plt.plot(timeList, peakList, 'k*')
             plt.legend([sx, sy, sz], ['X', 'Y', 'Z'], bbox_to_anchor=(1.01, 1), loc=2, borderaxespad=0., prop={'size':8})
             plt.grid(True)
-            plt.savefig(filename[-11:-4] + self.getClassname(label) + '.tif')
+            plt.savefig(filename[-11:-4] + self.getClassname(label) + '.eps')
             #plt.show()
             start = end;
 
