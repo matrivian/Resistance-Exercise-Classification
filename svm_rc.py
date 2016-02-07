@@ -1,4 +1,4 @@
-#------------------------------------------------------------# 
+#------------------------------------------------------------#
 #           RESISTANCE TRAINING CLASSIFICATION               #
 # Function: classify testing data into one of the 12 classes #
 #           and count how many exercises repeated            #
@@ -11,7 +11,7 @@
 # Version: 1.2                                               #
 #          Use SVM to classify the feature data              #
 # License: GPL3.0                                            #
-#------------------------------------------------------------# 
+#------------------------------------------------------------#
 
 #------------------------------------------------------------#
 #       Python Module needed for this project                #
@@ -38,8 +38,8 @@ class ResistanceClassification:
     def __init__(self, dataFolder):
         self.folder = dataFolder
         self.totalClsNum = 12
-        self.featureNum = 3 
-        self.filterWindowSize = 51
+        self.featureNum = 3
+        self.filterWindowSize = 91
 
     def getClassname(self, label):
         """
@@ -48,7 +48,7 @@ class ResistanceClassification:
          Parameters
          ------
          label :       class number
-        
+
          Returns
          ------
              class names
@@ -86,19 +86,18 @@ class ResistanceClassification:
 
          Parameters
          ------
-         rawData:             input data 
-         windowSize:         dimension of smoothing window; should be odd number      
+         rawData:             input data
+         windowSize:         dimension of smoothing window; should be odd number
          windowType:         window type including 'flat', 'hanning', 'hamming', 'bartlett' 'blackman'
-        
+
          Returns
          ------
          Low pass filtered data in list
         """
-        
+
         data = np.squeeze(np.asarray(rawData)) 		# convert matrix to array
         #print data.shape
         processedData = np.r_[2*data[0]-data[windowSize-1::-1],data,2*data[-1]-data[-1:-windowSize:-1]]
-        #print processedData.shape
         if windowType == 'flat':
             w = np.ones(windowSize, 'd')
         else:
@@ -111,20 +110,20 @@ class ResistanceClassification:
 
     def regroupMat(self, dataMat):
         """
-        Regroup matrix of the same label 
-         
+        Regroup matrix of the same label
+
          Parameters
          ------
          dataMat:            input data matrix
 
-         returns 
+         returns
          ------
              the same dimensional matrix with regrouped label
         """
         regroupedMat = np.zeros((1, 4))
         for label in range(self.totalClsNum):
             for i in range(dataMat.shape[0]):
-                if int(dataMat[i,-1]) == label: 
+                if int(dataMat[i,-1]) == label:
                     regroupedMat = np.vstack((regroupedMat, dataMat[i,:]))
         regroupedMat = np.delete(regroupedMat, (0), axis=0)
         #np.savetxt('test.csv', regroupedMat, fmt='%g', delimiter=',')
@@ -133,12 +132,12 @@ class ResistanceClassification:
 
     def readDataInFolder(self, filename):
         """
-        Read in testing data 
+        Read in testing data
 
          Parameters
          ------
          filename:         file name
-        
+
          Returns
          ------
             matrix has 5 colums, time, X, Y, Z and label
@@ -148,21 +147,23 @@ class ResistanceClassification:
         except IOError:
             print 'Could not open the data file!'
         # Initilization
-        dataMat = np.genfromtxt(dataFile, delimiter=',') 
+        dataMat = np.genfromtxt(dataFile, delimiter=',')
         dataFile.close()
-        return dataMat 
+        return dataMat
 
 
     def largestVar(self, data):
-        # Find the largest variance among X, Y and Z
+        """
+        Find the largest variance among X, Y and Z
 
-        # Parameters
-        # ------
-        # data :             5 x colNum matrix
-        
-        # Returns
-        # ------
-        #       Axis that has the largest variance
+         Parameters
+         ------
+         data :             5 x colNum matrix
+
+         Returns
+         ------
+               Axis that has the largest variance
+        """
 
         varCoord = []
         for i in range(1, 4):
@@ -171,15 +172,17 @@ class ResistanceClassification:
 
 
     def detectRange(self, smoothed):
-        # Detect whether the data is in certain range or not
+        """
+         Detect whether the data is in certain range or not
 
-        # Parameters
-        # ------
-        # data :              5 x colNum matrix
-        
-        # Returns
-        # ------
-        #       indices of range within two sigma of the mean
+         Parameters
+         ------
+         smoothed :              smoothed data 5 x colNum matrix
+
+         Returns
+         ------
+               indices of range within two sigma of the mean
+        """
 
         mean = np.mean(smoothed)
         var = np.var(smoothed)
@@ -187,25 +190,25 @@ class ResistanceClassification:
         return twoSigRange
 
 
-    def detectPeaks(self, x, mpd=120, threshold=0, edge='rising'):
-        # Peaks Detection Function
+    def detectPeaks(self, x, mpd=120, threshold=0):
+        """
+         Peaks Detection Function
 
-        # Parameters
-        #----------
-        # x : 1D array_like
-        #    data.
-        # mpd : positive integer, optional (default = 1)
-        #    detect peaks that are at least separated by minimum peak distance (in
-        #    number of data).
+         Parameters
+        ----------
+         x   :       1D array_like data
+         mpd :       positive integer detect peaks that are at least separated by minimum peak distance (in number of data)
+         threshold:  peaks - neighbors threshold 
 
-        # Returns
-        #-------
-        #    indeces of the peaks in `x`.
+         Returns
+        -------
+            indeces of the peaks in `x`.
+        """
 
         varIdx = self.largestVar(x)
         smoothed = np.array(x[varIdx+1, :])
         cleanedTime = np.array(x[0, :])
-        
+
         smoothed = np.atleast_1d(smoothed).astype('float64')
         #print smoothed
         # find indices of all peaks
@@ -243,7 +246,7 @@ class ResistanceClassification:
                     idel[i] = 0  # Keep current peak
             # remove the small peaks and sort back the indices by their occurrence
             ind = np.sort(ind[~idel])
-        
+
         peakIdx = []
         for item in ind:
             if smoothed[item] > self.detectRange(smoothed):
@@ -259,7 +262,7 @@ class ResistanceClassification:
 
          Parameters
          ------
-         tm :         time list
+         tmMatrix :         time list
 
          Returns
          ------
@@ -284,56 +287,6 @@ class ResistanceClassification:
         return tm
 
 
-    def plot(self, filename, dataMat, rawMat):
-        """
-        Plot function
-
-         Parameters
-         ------
-         dataMat :    data matrix
-
-         Returns
-         ------
-               plots of original data, low pass filtered data and peak selection
-        """
-        start = 0; end = 0
-        for label in range(self.totalClsNum):
-            for i in range(dataMat.shape[0]):
-                if int(dataMat[i, -1]) == label:
-                    end += 1
-            peakList, timeList, peakIdx = self.detectPeaks(dataMat[start:end].T, mpd=120)
-            # plot raw data
-            plt.figure()
-            plt.subplot(211)
-            plt.title(self.getClassname(label))
-            plt.xlim([-0.5, max(list(rawMat[start:end,0]))+0.5])
-            plt.xlabel('Time (s)')
-            plt.ylabel('Raw Accelerometer Data (g)')
-            sx, = plt.plot(rawMat[start:end,0], rawMat[start:end,1], 'r-', marker='o', markevery=(end-start-1)/3)  
-            sy, = plt.plot(rawMat[start:end,0], rawMat[start:end,2], 'g-', marker='v', markevery=(end-start-1)/3)
-            sz, = plt.plot(rawMat[start:end,0], rawMat[start:end,3], 'b-', marker='d', markevery=(end-start-1)/3)
-            plt.plot(timeList, peakList, 'k*')
-            plt.legend([sx, sy, sz], ['X', 'Y', 'Z'], bbox_to_anchor=(1.01, 1), loc=2, borderaxespad=0., prop={'size':8})
-            plt.grid(True)
-            plt.subplot(212)
-            #print dataMat[start:end,0]
-            maxX = max(dataMat[start:end,1]); maxY = max(dataMat[start:end,2]); maxZ = max(dataMat[start:end,3])
-            minX = min(dataMat[start:end,1]); minY = min(dataMat[start:end,2]); minZ = min(dataMat[start:end,3])
-            plt.ylim([min(minX, minY, minZ)-0.1, max(maxX, maxY, maxZ)+0.1])
-            plt.xlim([-0.5, max(list(dataMat[start:end,0]))+0.5])
-            plt.xlabel('Time (s)')
-            plt.ylabel('Filtered Accelerometer Data (g)')
-            sx, = plt.plot(dataMat[start:end,0], dataMat[start:end,1], 'r-', marker='o', markevery=(end-start-1)/3)
-            sy, = plt.plot(dataMat[start:end,0], dataMat[start:end,2], 'g-', marker='v', markevery=(end-start-1)/3)
-            sz, = plt.plot(dataMat[start:end,0], dataMat[start:end,3], 'b-', marker='d', markevery=(end-start-1)/3)
-            plt.plot(timeList, peakList, 'k*')
-            plt.legend([sx, sy, sz], ['X', 'Y', 'Z'], bbox_to_anchor=(1.01, 1), loc=2, borderaxespad=0., prop={'size':8})
-            plt.grid(True)
-            plt.savefig(filename[-11:-4] + self.getClassname(label) + '.eps')
-            #plt.show()
-            start = end;
-
-
     def extractFeature(self, dataMat):
         """
         Feature Extraction using moments
@@ -346,7 +299,7 @@ class ResistanceClassification:
          ------
                 48 x 3 matrix containing four moments
                 48: 12 classes x 4 moments
-                3:  X, Y and Z 
+                3:  X, Y and Z
         """
         featureMat = np.zeros((1,4))
         for label in range(self.totalClsNum):
@@ -370,7 +323,7 @@ class ResistanceClassification:
         featureMat = np.delete(featureMat, (0), axis=0)
         return featureMat
 
-    
+
     def training(self):
         """
         Read in training file, extract feature and regroup the feature matrix
@@ -389,7 +342,6 @@ class ResistanceClassification:
             filteredData[:,0] = rawData[:,0]; filteredData[:,4] = rawData[:,4]
             for i in range(1, 4):
                 filteredData[:,i] = self.filter(rawData[:,i], self.filterWindowSize)
-            #self.plot(dataFilename, filteredData, rawData)
             tmpFeature = self.extractFeature(filteredData)
             trainingDataFeature = np.vstack((trainingDataFeature, tmpFeature))
         traingDataFeature = np.delete(trainingDataFeature, (0), axis=0)
@@ -423,15 +375,15 @@ class ResistanceClassification:
                 result.append(clfResult[start].astype(int))
             else:
                 ind = np.argmax(count)
-                result.append(ind) 
+                result.append(ind)
             start += interval
             end += interval
         return result
 
-        
+
     def svmClf(self):
         """
-        SVM classifier main function 
+        SVM classifier main function
 
         Parameter:
         ------
@@ -447,7 +399,6 @@ class ResistanceClassification:
             filteredTestData[:,0] = rawTestData[:,0]; filteredTestData[:,4] = rawTestData[:,4]
             for i in range(1, 4):
                 filteredTestData[:,i] = self.filter(rawTestData[:,i], self.filterWindowSize)
-            self.plot(testFileName, filteredTestData, rawTestData)
             testDataFeature = self.extractFeature(filteredTestData)
             trainingDataFeature = np.zeros((1,4))
             for restFileNames in glob.glob(self.folder + '*.csv'):
@@ -457,12 +408,10 @@ class ResistanceClassification:
                     filteredTrainData[:,0] = rawTrainData[:,0]; filteredTrainData[:,4] = rawTrainData[:,4]
                     for i in range(1, 4):
                         filteredTrainData[:,i] = self.filter(rawTrainData[:,i], self.filterWindowSize)
-                    self.plot(restFileNames, filteredTestData, rawTestData)
                     tmpTrainFeature = self.extractFeature(filteredTrainData)
                     trainingDataFeature = np.vstack((trainingDataFeature, tmpTrainFeature))
                 traingDataFeature = np.delete(trainingDataFeature, (0), axis=0)
                 trainingFeatureMat = self.regroupMat(traingDataFeature)
-                #print trainingFeatureMat
 
             # SVM training
             C = 1.0 # SVM regularization parameter

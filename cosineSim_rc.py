@@ -1,4 +1,4 @@
-#------------------------------------------------------------# 
+#------------------------------------------------------------#
 # RESISTANCE TRAINING CLASSIFICATION using cosine similarity #
 # Function: classify testing data into one of the 12 classes #
 #           and count how many exercises repeated            #
@@ -11,7 +11,7 @@
 # Version: Beta8.0                                           #
 #          Add more data to training sets                    #
 # License: GPL3.0                                            #
-#------------------------------------------------------------# 
+#------------------------------------------------------------#
 
 #------------------------------------------------------------#
 #       Python Module needed for this project                #
@@ -37,17 +37,16 @@ class ResistanceClassification:
     def __init__(self, trainingData, testingDataFolder):
         self.trainingData = trainingData                    # training data name
         self.testingDataFolder = testingDataFolder          # testing data folder name
-        self.totalClsNum = 12
-        self.featureNum = 3
-        self.filterWinSize = 51
+        self.totalClsNum = 12                               # total exercises numbers
+        self.filterWinSize = 51                             # window size
 
-    def getclassname(self, clsNum):
+    def getClassname(self, clsNum):
         # Output strings of class name
 
         # Parameters
         # ------
         # clsNum :       class number
-        
+
         # Returns
         # ------
         #     class names
@@ -84,14 +83,14 @@ class ResistanceClassification:
 
         # Parameters
         # ------
-        # rawSig:          input signal                                        
-        # winSize:         dimension of smoothing window; should be odd number      
+        # rawSig:          input signal
+        # winSize:         dimension of smoothing window; should be odd number
         # winType:         window type including 'flat', 'hanning', 'hamming', 'bartlett' 'blackman'
-        
+
         # Returns
         # ------
         # Low pass filtered data in list
-        
+
         sig = np.squeeze(np.asarray(rawSig)) 		# convert matrix to array
         #print sig.shape
         processedSig = np.r_[2*sig[0]-sig[winSize-1::-1],sig,2*sig[-1]-sig[-1:-winSize:-1]]
@@ -107,12 +106,13 @@ class ResistanceClassification:
 
 
     def readInData(self, filename, clsNumber):
-        # Read in testing data 
+        # Read in testing data
 
         # Parameters
         # ------
         # filename :         data file name
-        
+        # clsNumber:         class number
+
         # Returns
         # ------
         #    matrix containing time, X, Y, Z and label
@@ -127,21 +127,21 @@ class ResistanceClassification:
 
         # Initilization
         time = []; x = []; y = []; z = []; clsNum = []
-        
+
         for line in dataFile.readlines():
             res = line.split(',')
             if clsNumber == int(res[-1]): 			# check the label
                 #tmp = res[0].split(':')
-                #time.append(float(tmp[1])) 			# Time list 
+                #time.append(float(tmp[1])) 			# Time list
                 time.append(float(res[0]))
                 x.append(float(res[1]))
                 y.append(float(res[2]))
                 z.append(float(res[3]))
                 clsNum.append(int(res[4]))
         dataFile.close()
-        dataMat = np.matrix([time, x, y, z, clsNum]) 	# noisy signal matrix
-        filteredDataMat = np.zeros((dataMat.shape[0], dataMat.shape[1])) # create empty filtered data matrix 
-        filteredDataMat[0,:] = dataMat[0,:] 		# time in noisy signal and low-passed are the same 
+        dataMat = np.array([time, x, y, z, clsNum]) 	# noisy signal matrix
+        filteredDataMat = np.zeros((dataMat.shape[0], dataMat.shape[1])) # create empty filtered data matrix
+        filteredDataMat[0,:] = dataMat[0,:] 		# time in noisy signal and low-passed are the same
         for i in range(1, 4):
             filteredDataMat[i, :] = self.smooth(dataMat[i, :], 91)
         return (filteredDataMat, dataMat)                   # 5 x colNum matrices
@@ -153,7 +153,7 @@ class ResistanceClassification:
         # Parameters
         # ------
         # data :             5 x colNum matrix
-        
+
         # Returns
         # ------
         #       Axis that has the largest variance
@@ -169,8 +169,8 @@ class ResistanceClassification:
 
         # Parameters
         # ------
-        # data :              5 x colNum matrix
-        
+        # smoothed :              5 x colNum matrix
+
         # Returns
         # ------
         #       indices of range within two sigma of the mean
@@ -181,25 +181,24 @@ class ResistanceClassification:
         return twoSigRange
 
 
-    def detectPeaks(self, x, mpd=120, threshold=0, edge='rising'):
+    def detectPeaks(self, x, mpd=120, threshold=0):
         # Peaks Detection Function
 
         # Parameters
         #----------
-        # x : 1D array_like
-        #    data.
-        # mpd : positive integer, optional (default = 1)
-        #    detect peaks that are at least separated by minimum peak distance (in
-        #    number of data).
+        # x :        1D array_like data
+        # mpd :      positive integer, detect peaks that are at least separated by minimum peak distance (in number of data)
+        # threshold: threshold of peaks - neighbors
 
         # Returns
+        # edge:      
         #-------
         #    indeces of the peaks in `x`.
 
         varIdx = self.findLargestVar(x)
         smoothed = np.array(x[varIdx+1, :])
         cleanedTime = np.array(self.shiftTime(x[0, :]))
-        
+
         smoothed = np.atleast_1d(smoothed).astype('float64')
         # find indices of all peaks
         dx = smoothed[1:] - smoothed[:-1]
@@ -236,7 +235,6 @@ class ResistanceClassification:
                     idel[i] = 0  # Keep current peak
             # remove the small peaks and sort back the indices by their occurrence
             ind = np.sort(ind[~idel])
-        
         peakIdx = []
         for item in ind:
             if smoothed[item] > self.detectRange(smoothed):
@@ -270,7 +268,6 @@ class ResistanceClassification:
         m4 = np.power(abs(m4), 1.0/4)
         m4 = np.matrix(m4).reshape(3, 1)
         momentMat = np.concatenate((m1, m2, m3, m4), axis=1)
-        #print momentMat
         return momentMat
 
 
@@ -279,7 +276,7 @@ class ResistanceClassification:
 
         # Parameters
         # ------
-        # tm :         time list
+        # tmMatrix :         time list
 
         # Returns
         # ------
@@ -303,41 +300,73 @@ class ResistanceClassification:
         return tm
 
 
-    def plot(self, dataMat, clsNum, filename):
+    def plot(self, rawMat, dataMat, label, filename, flag):
         # Plot function
 
         # Parameters
         # ------
-        # dataMat :    data matrix
-        # clsNum :     class number
+        # rawMat :     raw data
+        # dataMat :    filtered data matrix
+        # label :      label
+        # filename:    file name
+        # flag:        0: plot both raw data and filtered data 1: plot filtered data
 
         # Returns
         # ------
         #       plots of original data, low pass filtered data and peak selection
 
-        peakList, timeList, peakIdx = self.detectPeaks(dataMat, mpd=90)
-        # plot raw data
-        plt.figure()
-        plt.title(self.getclassname(clsNum))
-        plt.xlabel('Time (s)')
-        plt.ylabel('Filtered Acceleration Data (g)')
-        sx, = plt.plot(self.shiftTime(dataMat[0,:]), dataMat[1,:], 'r-')  
-        sy, = plt.plot(self.shiftTime(dataMat[0,:]), dataMat[2,:], 'b-')
-        sz, = plt.plot(self.shiftTime(dataMat[0,:]), dataMat[3,:], 'g-')
-        plt.plot(timeList, peakList, 'k*')
-        plt.legend([sx, sy, sz], ['X', 'Y', 'Z'], bbox_to_anchor=(1.01, 1), loc=2, borderaxespad=0., prop={'size':8})
-        plt.grid(True)
-        plt.savefig(filename + '_' + self.getclassname(clsNum) + '.eps')
-        #plt.show()
+        peakList, timeList, peakIdx = self.detectPeaks(dataMat, mpd=120)
+        if flag == 0:
+            plt.figure()
+            plt.subplot(211)
+            plt.title(self.getClassname(label))
+            plt.xlim([-0.5, max(list(rawMat[0,:]))+0.5])
+            plt.xlabel('Time (s)')
+            plt.ylabel('Raw Accelerometer Data (g)')
+            sx, = plt.plot(rawMat[0,:], rawMat[1,:], 'r-', marker='o', markevery=(len(rawMat[0,:])-1)/3) 
+            sy, = plt.plot(rawMat[0,:], rawMat[2,:], 'g-', marker='v', markevery=(len(rawMat[0,:])-1)/3)
+            sz, = plt.plot(rawMat[0,:], rawMat[3,:], 'b-', marker='d', markevery=(len(rawMat[0,:])-1)/3)
+            plt.legend([sx, sy, sz], ['X', 'Y', 'Z'], bbox_to_anchor=(1.01, 1), loc=2, borderaxespad=0., prop={'size':8})
+            plt.grid(True)
+            plt.subplot(212)
+            maxX = max(dataMat[1,:]); maxY = max(dataMat[2,:]); maxZ = max(dataMat[3,:])
+            minX = min(dataMat[1,:]); minY = min(dataMat[2,:]); minZ = min(dataMat[3,:])
+            plt.ylim([min(minX, minY, minZ)-0.1, max(maxX, maxY, maxZ)+0.1])
+            plt.xlim([-0.5, max(list(dataMat[0,:]))+0.5])
+            plt.xlabel('Time (s)')
+            plt.ylabel('Filtered Accelerometer Data (g)')
+            sx, = plt.plot(dataMat[0,:], dataMat[1,:], 'r-', marker='o', markevery=(len(dataMat[1,:])-1)/3)
+            sy, = plt.plot(dataMat[0,:], dataMat[2,:], 'g-', marker='v', markevery=(len(dataMat[1,:])-1)/3)
+            sz, = plt.plot(dataMat[0,:], dataMat[3,:], 'b-', marker='d', markevery=(len(dataMat[1,:])-1)/3)
+            plt.plot(timeList, peakList, 'k*')
+            plt.legend([sx, sy, sz], ['X', 'Y', 'Z'], bbox_to_anchor=(1.01, 1), loc=2, borderaxespad=0., prop={'size':8})
+            plt.grid(True)
+        elif flag == 1:
+            plt.figure()
+            plt.title(self.getClassname(label))
+            maxX = max(dataMat[1,:]); maxY = max(dataMat[2,:]); maxZ = max(dataMat[3,:])
+            minX = min(dataMat[1,:]); minY = min(dataMat[2,:]); minZ = min(dataMat[3,:])
+            plt.ylim([min(minX, minY, minZ)-0.1, max(maxX, maxY, maxZ)+0.1])
+            plt.xlim([-0.5, max(list(dataMat[0,:]))+0.5])
+            plt.xlabel('Time (s)')
+            plt.ylabel('Filtered Accelerometer Data (g)')
+            sx, = plt.plot(dataMat[0,:], dataMat[1,:], 'r-', marker='o', markevery=(len(dataMat[1,:])-1)/3)
+            sy, = plt.plot(dataMat[0,:], dataMat[2,:], 'g-', marker='v', markevery=(len(dataMat[1,:])-1)/3)
+            sz, = plt.plot(dataMat[0,:], dataMat[3,:], 'b-', marker='d', markevery=(len(dataMat[1,:])-1)/3)
+            plt.plot(timeList, peakList, 'k*')
+            plt.legend([sx, sy, sz], ['X', 'Y', 'Z'], bbox_to_anchor=(1.01, 1), loc=2, borderaxespad=0., prop={'size':8})
+            plt.grid(True)
+        plt.savefig(filename + self.getClassname(label) + '.eps')      # save figure
         return len(peakList)
 
 
     def featureExtract(self, dataMat, clsNum):
-        # Feature Extraction 
-        
+        # Feature Extraction
+
         # Parameters
         # ------
         # dataMat :          5 x colNum data matrix
+        # clsNum :           class number
 
         # Returns
         # ------
@@ -377,6 +406,7 @@ class ResistanceClassification:
 
         # Parameters
         # ------
+        # clsRes      :         classification results
         # testingData :         testing matrix
 
         # Returns
@@ -409,16 +439,16 @@ class ResistanceClassification:
         print 'Training '
         trainingFeatRowNum = 12; trainingFeatColNum = 13
         trainingFeatMat = np.zeros((trainingFeatRowNum, trainingFeatColNum))  # 12 x 13 feature matrix
-        tolClsNum = 12         # total class number 
+        tolClsNum = 12         # total class number
         # Training
         for clsNum in range(tolClsNum):
             # Read in data
             filteredTrainSig, noisyTrainSig = self.readInData(trainingData, clsNum)    # 5 x colNum matrices
             assert(filteredTrainSig.shape[0] == 5), "Row number of the training data is wrong"
             time.sleep(.1)
-            print '\b. ', 
+            print '\b. ',
             sys.stdout.flush()
-            trainingFeat = self.featureExtract(filteredTrainSig, clsNum)                  # 1 x 12 vector 
+            trainingFeat = self.featureExtract(filteredTrainSig, clsNum)                  # 1 x 12 vector
             trainingFeatMat[clsNum, ] = trainingFeat
         print '\nDone!'
         return trainingFeatMat
@@ -434,28 +464,27 @@ class ResistanceClassification:
 
         # Returns
         # ------
-        #      testing results 
+        #      testing results
 
         # testing features
         clsResList = []; testLabel = []
         tolClsNum = 12
         reps = []
-       
+
         for clsNum in range(tolClsNum):
             filteredTestSig, noisyTestSig = self.readInData(testingData, clsNum)
             assert(filteredTestSig.shape[0] == 5), "Row number of the testing data is wrong"
             testingFeatArr = self.featureExtract(filteredTestSig, clsNum)                  # 1 x 12 vector
-            reps.append(self.plot(filteredTestSig, clsNum, testingData[-11:-4]))
-            testLabel.append(int(testingFeatArr[-1]))   # testing data labels  
+            reps.append(self.plot(noisyTestSig, filteredTestSig, clsNum, testingData[-11:-4], 1))
+            testLabel.append(int(testingFeatArr[-1]))   # testing data labels
             clsRes = self.classify(trainingFeatMat, testingFeatArr)
             clsResList.append(clsRes)
-        #print reps
         return (clsResList, testLabel, reps)
-        
+
 
     def showResults(self, clsResList, testLabel):
         # Show classification results
-        
+
         # Parameters
         # ------
         # clsResList :            classification results list
@@ -480,7 +509,7 @@ class ResistanceClassification:
 
     def cosineSimilarityClf(self):
         # Main Classification function
-        
+
         # Parameters
         # ------
 
@@ -504,7 +533,7 @@ class ResistanceClassification:
             except IOError:
                 print 'Could not open the file ' + testingData + '\n'
             time.sleep(.1)
-            print '\t ' + testingData 
+            print '\t ' + testingData
             sys.stdout.flush()
             resList, testLabel, reps = self.testing(testingData, trainingFeatMat)
             result += resList; label += testLabel
