@@ -23,6 +23,18 @@ Classification of twelve different resistance exercises using cosine similarity 
 3. [Matplotlib](http://matplotlib.org/)
 4. [Sklearn](http://scikit-learn.org/stable/)
 
+## Data Sample ##
+0,-0.886,-0.487,0.117,0
+
+1st column: time
+
+2nd column: X axis data
+
+3rd column: Y axis data
+
+4th column: Z axis data
+
+5th column: label (0-11)
 
 ## How to Run ##
 For cosine similarity:
