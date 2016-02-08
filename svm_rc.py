@@ -54,29 +54,29 @@ class ResistanceClassification:
              class names
         """
         if label == 0:
-            clsname = 'Bench Press'
+            clsname = 'Bench_Press'
         elif label == 1:
-            clsname = 'Shoulder Press'
+            clsname = 'Shoulder_Press'
         elif label == 2:
-            clsname = 'Bicep Curls'
+            clsname = 'Bicep_Curls'
         elif label == 3:
-            clsname = 'Upright Rows'
+            clsname = 'Upright_Rows'
         elif label == 4:
-            clsname = 'Lateral Raises'
+            clsname = 'Lateral_Raises'
         elif label == 5:
-            clsname = 'Overhead Triceps Extensions'
+            clsname = 'Overhead_Triceps_Extensions'
         elif label == 6:
-            clsname = 'Kneeling Triceps Kickbacks'
+            clsname = 'Kneeling_Triceps_Kickbacks'
         elif label == 7:
-            clsname = 'Standing Bent-over Rows'
+            clsname = 'Standing_Bent-over_Rows'
         elif label == 8:
-            clsname = 'Kneeling Bent-over Rows'
+            clsname = 'Kneeling_Bent-over_Rows'
         elif label == 9:
             clsname = 'Squats'
         elif label == 10:
-            clsname = 'Forward Walking Lunges'
+            clsname = 'Forward_Walking_Lunges'
         elif label == 11:
-            clsname = 'Calf Raises'
+            clsname = 'Calf_Raises'
         return clsname
 
 

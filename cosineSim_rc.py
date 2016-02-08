@@ -52,29 +52,29 @@ class ResistanceClassification:
         #     class names
 
         if clsNum == 0:
-            clsname = 'Bench Press'
+            clsname = 'Bench_Press'
         elif clsNum == 1:
-            clsname = 'Shoulder Press'
+            clsname = 'Shoulder_Press'
         elif clsNum == 2:
-            clsname = 'Bicep Curls'
+            clsname = 'Bicep_Curls'
         elif clsNum == 3:
-            clsname = 'Upright Rows'
+            clsname = 'Upright_Rows'
         elif clsNum == 4:
-            clsname = 'Lateral Raises'
+            clsname = 'Lateral_Raises'
         elif clsNum == 5:
-            clsname = 'Overhead Triceps Extensions'
+            clsname = 'Overhead_Triceps_Extensions'
         elif clsNum == 6:
-            clsname = 'Kneeling Triceps Kickbacks'
+            clsname = 'Kneeling_Triceps_Kickbacks'
         elif clsNum == 7:
-            clsname = 'Standing Bent-over Rows'
+            clsname = 'Standing_Bent-over_Rows'
         elif clsNum == 8:
-            clsname = 'Kneeling Bent-over Rows'
+            clsname = 'Kneeling_Bent-over_Rows'
         elif clsNum == 9:
             clsname = 'Squats'
         elif clsNum == 10:
-            clsname = 'Forward Walking Lunges'
+            clsname = 'Forward_Walking_Lunges'
         elif clsNum == 11:
-            clsname = 'Calf Raises'
+            clsname = 'Calf_Raises'
         return clsname
 
 
@@ -143,7 +143,7 @@ class ResistanceClassification:
         filteredDataMat = np.zeros((dataMat.shape[0], dataMat.shape[1])) # create empty filtered data matrix
         filteredDataMat[0,:] = dataMat[0,:] 		# time in noisy signal and low-passed are the same
         for i in range(1, 4):
-            filteredDataMat[i, :] = self.smooth(dataMat[i, :], 91)
+            filteredDataMat[i, :] = self.smooth(dataMat[i, :], self.filterWinSize)
         return (filteredDataMat, dataMat)                   # 5 x colNum matrices
 
 
@@ -475,7 +475,7 @@ class ResistanceClassification:
             filteredTestSig, noisyTestSig = self.readInData(testingData, clsNum)
             assert(filteredTestSig.shape[0] == 5), "Row number of the testing data is wrong"
             testingFeatArr = self.featureExtract(filteredTestSig, clsNum)                  # 1 x 12 vector
-            reps.append(self.plot(noisyTestSig, filteredTestSig, clsNum, testingData[-11:-4], 1))
+            reps.append(self.plot(noisyTestSig, filteredTestSig, clsNum, testingData[-11:-4], 0))
             testLabel.append(int(testingFeatArr[-1]))   # testing data labels
             clsRes = self.classify(trainingFeatMat, testingFeatArr)
             clsResList.append(clsRes)
