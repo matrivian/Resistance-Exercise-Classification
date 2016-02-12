@@ -385,7 +385,7 @@ class ResistanceClassification:
         ------
             Print the result of the classification
         """
-        finalResult = []; finalExpected = []
+        finalResult, finalExpected = [], []
         for testFileName in glob.glob(self.folder + '*.csv'):
             rawTestData = self.readDataInFolder(testFileName)
             filteredTestData = np.zeros((rawTestData.shape[0], rawTestData.shape[1]))

@@ -126,8 +126,7 @@ class ResistanceClassification:
             print 'Could not open the testing data file!'
 
         # Initilization
-        time = []; x = []; y = []; z = []; clsNum = []
-
+        time, x, y, z, clsNum = [], [], [], [], []
         for line in dataFile.readlines():
             res = line.split(',')
             if clsNumber == int(res[-1]): 			# check the label
@@ -462,7 +461,7 @@ class ResistanceClassification:
         #      testing results
 
         # testing features
-        clsResList = []; testLabel = []
+        clsResList, testLabel = [], []
         tolClsNum = 12
         reps = []
 
@@ -517,7 +516,7 @@ class ResistanceClassification:
         # Training
         trainingFeatMat = self.training(self.trainingData)
         # Testing
-        result = []; label = []
+        result, label = [], []
         os.chdir(self.testingDataFolder)
         print 'Classifying ... '
         totalReps = [0] * 12
