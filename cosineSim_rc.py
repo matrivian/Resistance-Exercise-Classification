@@ -158,9 +158,7 @@ class ResistanceClassification:
         # ------
         #       Axis that has the largest variance
 
-        varCoord = []
-        for i in range(1, 4):
-            varCoord.append(abs(np.var(data[i, :])))
+        varCoord = [abs(np.var(data[i,:])) for i in range(1,4)]
         return varCoord.index(max(varCoord))
 
 
@@ -235,10 +233,8 @@ class ResistanceClassification:
                     idel[i] = 0  # Keep current peak
             # remove the small peaks and sort back the indices by their occurrence
             ind = np.sort(ind[~idel])
-        peakIdx = []
-        for item in ind:
-            if smoothed[item] > self.detectRange(smoothed):
-                peakIdx.append(item)
+            
+        peakIdx = [item for item in ind if smoothed[item] > self.detectRange(smoothed)]
         peakList = smoothed[peakIdx]
         timeList = cleanedTime[peakIdx]
         return (peakList, timeList, peakIdx)
@@ -395,7 +391,6 @@ class ResistanceClassification:
         res = []
         for i in range(trainingFeat.shape[0]):
             meanSim = np.dot(trainingFeat[i][0:-1], testingFeat[0:-1])/(scialg.norm(trainingFeat[i][0:-1], 2)*scialg.norm(testingFeat[0:-1], 2))
-            #print meanSim
             #stdSim = np.dot(trainingFeat[i][3:6], testingFeat[3:6])/(scialg.norm(trainingFeat[i][3:6], 2)*scialg.norm(testingFeat[3:6], 2))
             res.append(meanSim)
         return res.index(max(res))

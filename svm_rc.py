@@ -165,9 +165,7 @@ class ResistanceClassification:
                Axis that has the largest variance
         """
 
-        varCoord = []
-        for i in range(1, 4):
-            varCoord.append(abs(np.var(data[i, :])))
+        varCoord = [abs(np.var(data[i,:])) for i in range(1,4)]
         return varCoord.index(max(varCoord))
 
 
@@ -246,11 +244,7 @@ class ResistanceClassification:
                     idel[i] = 0  # Keep current peak
             # remove the small peaks and sort back the indices by their occurrence
             ind = np.sort(ind[~idel])
-
-        peakIdx = []
-        for item in ind:
-            if smoothed[item] > self.detectRange(smoothed):
-                peakIdx.append(item)
+        peakIdx = [item for item in ind if smoothed[item] > self.detectRange(smoothed)]
         peakList = smoothed[peakIdx]
         timeList = cleanedTime[peakIdx]
         return (peakList, timeList, peakIdx)
@@ -346,7 +340,6 @@ class ResistanceClassification:
             trainingDataFeature = np.vstack((trainingDataFeature, tmpFeature))
         traingDataFeature = np.delete(trainingDataFeature, (0), axis=0)
         trainingFeatureMat = self.regroupMat(traingDataFeature)
-        #print trainingFeatureMat
 
         # SVM training
         C = 1.0 # SVM regularization parameter
@@ -412,12 +405,10 @@ class ResistanceClassification:
                     trainingDataFeature = np.vstack((trainingDataFeature, tmpTrainFeature))
                 traingDataFeature = np.delete(trainingDataFeature, (0), axis=0)
                 trainingFeatureMat = self.regroupMat(traingDataFeature)
-
             # SVM training
             C = 1.0 # SVM regularization parameter
             clfr = svm.SVC(kernel='rbf', gamma=300, C=C)
             clfr.fit(trainingFeatureMat[:,0:self.featureNum], trainingFeatureMat[:,self.featureNum])
-
             # SVM testing
             clfResult = clfr.predict(testDataFeature[:,0:self.featureNum])
             finalResult += self.getResult(clfResult)

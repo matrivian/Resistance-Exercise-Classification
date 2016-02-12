@@ -48,5 +48,8 @@ For support vector machine:
 ## Contact ##
 junguo AT boisestate.edu
 
+## References ##
+1. https://github.com/demotu/BMC
+
 ## License ##
 GPL v3 license
