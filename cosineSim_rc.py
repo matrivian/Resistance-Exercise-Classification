@@ -18,7 +18,6 @@
 #------------------------------------------------------------#
 import os
 import glob
-import sys
 import time
 import numpy as np
 import matplotlib.pyplot as plt
@@ -542,5 +541,6 @@ class ResistanceClassification:
 #                 Run it from here                           #
 #------------------------------------------------------------#
 if __name__ == "__main__":
+    import sys
     exercise = ResistanceClassification(sys.argv[1], sys.argv[2])
     exercise.cosineSimilarityClf();

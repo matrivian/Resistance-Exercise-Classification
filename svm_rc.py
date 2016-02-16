@@ -18,7 +18,6 @@
 #------------------------------------------------------------#
 import os
 import glob
-import sys
 import time
 import timeit
 import numpy as np
@@ -422,5 +421,6 @@ class ResistanceClassification:
 #                 Run it from here                           #
 #------------------------------------------------------------#
 if __name__ == "__main__":
+    import sys
     exercise = ResistanceClassification(sys.argv[1])
     exercise.svmClf()
