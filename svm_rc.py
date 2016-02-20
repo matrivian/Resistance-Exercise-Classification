@@ -1,36 +1,20 @@
-#------------------------------------------------------------#
-#           RESISTANCE TRAINING CLASSIFICATION               #
-# Function: classify testing data into one of the 12 classes #
-#           and count how many exercises repeated            #
-#                                                            #
-# Input: Training Date and Testing Data                      #
-# Output: Testing accuracy and repeated times                #
-#                                                            #
-# Author:  Jun Guo                                           #
-# Date:    09/25/2015                                        #
-# Version: 1.2                                               #
-#          Use SVM to classify the feature data              #
-# License: GPL3.0                                            #
-#------------------------------------------------------------#
+"""
+           RESISTANCE TRAINING CLASSIFICATION               
+ Function: classify testing data into one of the 12 classes 
+           and count how many exercises repeated            
+                                                            
+ Input: Training Date and Testing Data                      
+ Output: Testing accuracy and repeated times                
+                                                            
+ Author:  Jun Guo                                           
+ Date:    09/25/2015                                        
+ Version: 1.2                                               
+          Use SVM to classify the feature data              
+ License: GPL3.0                                            
+"""
 
-#------------------------------------------------------------#
-#       Python Module needed for this project                #
-#------------------------------------------------------------#
-import os
-import glob
-import time
-import timeit
 import numpy as np
-import matplotlib.pyplot as plt
-import scipy.special as scs
-import scipy.signal
-import scipy.linalg as scialg
-from scipy.stats.mstats import moment
 from sklearn import svm, metrics
-
-#------------------------------------------------------------#
-#                        Resistance Class                    #
-#------------------------------------------------------------#
 
 class ResistanceClassification:
 
@@ -50,7 +34,7 @@ class ResistanceClassification:
 
          Returns
          ------
-             class names
+                        class names
         """
         if label == 0:
             clsname = 'Bench_Press'
@@ -85,13 +69,13 @@ class ResistanceClassification:
 
          Parameters
          ------
-         rawData:             input data
+         rawData:            input data
          windowSize:         dimension of smoothing window; should be odd number
          windowType:         window type including 'flat', 'hanning', 'hamming', 'bartlett' 'blackman'
 
          Returns
          ------
-         Low pass filtered data in list
+                            Low pass filtered data in list
         """
 
         data = np.squeeze(np.asarray(rawData)) 		# convert matrix to array
@@ -113,11 +97,11 @@ class ResistanceClassification:
 
          Parameters
          ------
-         dataMat:            input data matrix
+         dataMat:           input data matrix
 
          returns
          ------
-             the same dimensional matrix with regrouped label
+                            the same dimensional matrix with regrouped label
         """
         regroupedMat = np.zeros((1, 4))
         for label in range(self.totalClsNum):
@@ -125,7 +109,6 @@ class ResistanceClassification:
                 if int(dataMat[i,-1]) == label:
                     regroupedMat = np.vstack((regroupedMat, dataMat[i,:]))
         regroupedMat = np.delete(regroupedMat, (0), axis=0)
-        #np.savetxt('test.csv', regroupedMat, fmt='%g', delimiter=',')
         return regroupedMat
 
 
@@ -139,7 +122,7 @@ class ResistanceClassification:
 
          Returns
          ------
-            matrix has 5 colums, time, X, Y, Z and label
+                           matrix has 5 colums, time, X, Y, Z and label
         """
         try:
             dataFile = open(filename, 'r+')
@@ -161,9 +144,8 @@ class ResistanceClassification:
 
          Returns
          ------
-               Axis that has the largest variance
+                            Axis that has the largest variance
         """
-
         varCoord = [abs(np.var(data[i,:])) for i in range(1,4)]
         return varCoord.index(max(varCoord))
 
@@ -174,13 +156,12 @@ class ResistanceClassification:
 
          Parameters
          ------
-         smoothed :              smoothed data 5 x colNum matrix
+         smoothed :         smoothed data 5 x colNum matrix
 
          Returns
          ------
-               indices of range within two sigma of the mean
+                            indices of range within two sigma of the mean
         """
-
         mean = np.mean(smoothed)
         var = np.var(smoothed)
         twoSigRange = mean + 1.5*var
@@ -193,15 +174,14 @@ class ResistanceClassification:
 
          Parameters
         ----------
-         x   :       1D array_like data
-         mpd :       positive integer detect peaks that are at least separated by minimum peak distance (in number of data)
-         threshold:  peaks - neighbors threshold 
+         x   :              1D array_like data
+         mpd :              positive integer detect peaks that are at least separated by minimum peak distance (in number of data)
+         threshold:         peaks - neighbors threshold 
 
          Returns
         -------
-            indeces of the peaks in `x`.
+                            peaks lists, peaks time list, peaks indices 
         """
-
         varIdx = self.largestVar(x)
         smoothed = np.array(x[varIdx+1, :])
         cleanedTime = np.array(x[0, :])
@@ -259,9 +239,8 @@ class ResistanceClassification:
 
          Returns
          ------
-               shifited time array starting from 0
+                            shifited time array starting from 0
         """
-
         tm = list(np.array(tmMatrix).reshape(-1,))
         cycle = 60
         end = 59.9
@@ -290,11 +269,12 @@ class ResistanceClassification:
 
          Return
          ------
-                48 x 3 matrix containing four moments
-                48: 12 classes x 4 moments
-                3:  X, Y and Z
+                        48 x 3 matrix containing four moments
+                        48: 12 classes x 4 moments
+                        3:  X, Y and Z
         """
         featureMat = np.zeros((1,4))
+        from scipy.stats.mstats import moment
         for label in range(self.totalClsNum):
             startInd = np.where(dataMat[:,-1] == label)[-1][0]
             endInd = np.where(dataMat[:,-1] == label)[-1][-1]
@@ -326,9 +306,10 @@ class ResistanceClassification:
 
         Return:
         ------
-            svm classifier
+                    svm classifier
         """
         trainingDataFeature = np.zeros((1,4))
+        import glob
         for dataFilename in glob.glob(self.trainingDataFolder + '*.csv'):
             rawData = self.readDataInFolder(dataFilename)
             filteredData = np.zeros((rawData.shape[0], rawData.shape[1]))
@@ -353,11 +334,11 @@ class ResistanceClassification:
 
         Parameter:
         ------
-            clfResult:           SVM classification result
+            clfResult:          SVM classification result
 
         Return:
         -----
-            result:              reduced dimension vector 1 x 12
+            result:             reduced dimension vector 1 x 12
         """
         start = 0; end = 4; interval = 4
         result = []
@@ -382,8 +363,8 @@ class ResistanceClassification:
 
         Return:
         ------
-            Print the result of the classification
         """
+        import glob
         finalResult, finalExpected = [], []
         for testFileName in glob.glob(self.folder + '*.csv'):
             rawTestData = self.readDataInFolder(testFileName)
@@ -417,9 +398,6 @@ class ResistanceClassification:
         print("Confusion Matrix:\n%s") %(metrics.confusion_matrix(finalExpected, finalResult))
 
 
-#------------------------------------------------------------#
-#                 Run it from here                           #
-#------------------------------------------------------------#
 if __name__ == "__main__":
     import sys
     exercise = ResistanceClassification(sys.argv[1])

@@ -1,35 +1,19 @@
-#------------------------------------------------------------#
-# RESISTANCE TRAINING CLASSIFICATION using cosine similarity #
-# Function: classify testing data into one of the 12 classes #
-#           and count how many exercises repeated            #
-#                                                            #
-# Input: Training Date and Testing Data                      #
-# Output: Testing accuracy and repeated times                #
-#                                                            #
-# Author:  Jun Guo                                           #
-# Date:    11/13/2014                                        #
-# Version: Beta8.0                                           #
-#          Add more data to training sets                    #
-# License: GPL3.0                                            #
-#------------------------------------------------------------#
+"""
+ RESISTANCE TRAINING CLASSIFICATION using cosine similarity 
+ Function: classify testing data into one of the 12 classes 
+           and count how many exercises repeated            
+                                                            
+ Input: Training Date and Testing Data                      
+ Output: Testing accuracy and repeated times                
+                                                            
+ Author:  Jun Guo                                           
+ Date:    11/13/2014                                        
+ Version: Beta8.0                                           
+          Add more data to training sets                    
+ License: GPL3.0                                            
+"""
 
-#------------------------------------------------------------#
-#       Python Module needed for this project                #
-#------------------------------------------------------------#
-import os
-import glob
-import time
 import numpy as np
-import matplotlib.pyplot as plt
-import scipy.special as scs
-import scipy.signal
-import scipy.linalg as scialg
-from scipy.stats.mstats import moment
-
-
-#------------------------------------------------------------#
-#                        Functions                           #
-#------------------------------------------------------------#
 
 class ResistanceClassification:
 
@@ -40,16 +24,17 @@ class ResistanceClassification:
         self.filterWinSize = 51                             # window size
 
     def getClassname(self, clsNum):
-        # Output strings of class name
+        """
+         Output strings of class name
 
-        # Parameters
-        # ------
-        # clsNum :       class number
+         Parameters
+         ------
+         clsNum :       class number
 
-        # Returns
-        # ------
-        #     class names
-
+         Returns
+         ------
+                        class names
+        """
         if clsNum == 0:
             clsname = 'Bench_Press'
         elif clsNum == 1:
@@ -78,18 +63,20 @@ class ResistanceClassification:
 
 
     def smooth(self, rawSig, winSize, winType='hanning'):
-        # Low Pass Filter Function
+        """
+         Low Pass Filter Function
 
-        # Parameters
-        # ------
-        # rawSig:          input signal
-        # winSize:         dimension of smoothing window; should be odd number
-        # winType:         window type including 'flat', 'hanning', 'hamming', 'bartlett' 'blackman'
+         Parameters
+         ------
+         rawSig:          input signal
+         winSize:         dimension of smoothing window; should be odd number
+         winType:         window type including 'flat', 'hanning', 'hamming', 'bartlett' 'blackman'
 
-        # Returns
-        # ------
-        # Low pass filtered data in list
-
+         Returns
+         ------
+                          Low pass filtered data in list
+        """
+        import numpy as np
         sig = np.squeeze(np.asarray(rawSig)) 		# convert matrix to array
         #print sig.shape
         processedSig = np.r_[2*sig[0]-sig[winSize-1::-1],sig,2*sig[-1]-sig[-1:-winSize:-1]]
@@ -105,19 +92,18 @@ class ResistanceClassification:
 
 
     def readInData(self, filename, clsNumber):
-        # Read in testing data
+        """
+         Read in testing data
 
-        # Parameters
-        # ------
-        # filename :         data file name
-        # clsNumber:         class number
+         Parameters
+         ------
+         filename :         data file name
+         clsNumber:         class number
 
-        # Returns
-        # ------
-        #    matrix containing time, X, Y, Z and label
-
-        ###
-
+         Returns
+         ------
+                            noisy and filtered matrix containing time, X, Y, Z and label
+        """
         # input file check
         try:
             dataFile = open(filename, 'r+')
@@ -146,31 +132,33 @@ class ResistanceClassification:
 
 
     def findLargestVar(self, data):
-        # Find the largest variance among X, Y and Z
+        """
+         Find the largest variance among X, Y and Z
 
-        # Parameters
-        # ------
-        # data :             5 x colNum matrix
+         Parameters
+         ------
+         data :             5 x colNum matrix
 
-        # Returns
-        # ------
-        #       Axis that has the largest variance
-
+         Returns
+         ------
+                            Axis that has the largest variance
+        """
         varCoord = [abs(np.var(data[i,:])) for i in range(1,4)]
         return varCoord.index(max(varCoord))
 
 
     def detectRange(self, smoothed):
-        # Detect whether the data is in certain range or not
+        """
+         Detect whether the data is in certain range or not
 
-        # Parameters
-        # ------
-        # smoothed :              5 x colNum matrix
+         Parameters
+         ------
+         smoothed :         5 x colNum matrix
 
-        # Returns
-        # ------
-        #       indices of range within two sigma of the mean
-
+         Returns
+         ------
+                            indices of range within two sigma of the mean
+        """
         mean = np.mean(smoothed)
         var = np.var(smoothed)
         twoSigRange = mean + 1.5*var
@@ -178,19 +166,19 @@ class ResistanceClassification:
 
 
     def detectPeaks(self, x, mpd=120, threshold=0):
-        # Peaks Detection Function
+        """
+         Peaks Detection Function
 
-        # Parameters
-        #----------
-        # x :        1D array_like data
-        # mpd :      positive integer, detect peaks that are at least separated by minimum peak distance (in number of data)
-        # threshold: threshold of peaks - neighbors
+         Parameters
+        ----------
+         x :                    1D array_like data
+         mpd :                  positive integer, detect peaks that are at least separated by minimum peak distance (in number of data)
+         threshold:             threshold of peaks - neighbors
 
-        # Returns
-        # edge:      
-        #-------
-        #    indeces of the peaks in `x`.
-
+         Returns    
+        -------
+                                peaks list, peaks time list and peak indices 
+        """
         varIdx = self.findLargestVar(x)
         smoothed = np.array(x[varIdx+1, :])
         cleanedTime = np.array(self.shiftTime(x[0, :]))
@@ -239,17 +227,19 @@ class ResistanceClassification:
 
 
     def moments(self, dataMat):
-        # Compute moments from data and make sure that all the moments are at the same order
+        """
+         Compute moments from data and make sure that all the moments are at the same order
 
-        # Parameters
-        # ------
-        # dataMat :         5 x colNum matrix
+         Parameters
+         ------
+         dataMat :         5 x colNum matrix
 
-        # Returns
-        # ------
-        #       3x4 matrix containing four moments
-
+         Returns
+         ------
+                            3x4 matrix containing four moments
+        """
         # Feature selection
+        from scipy.stats.mstats import moment
         m1 = np.mean(dataMat[1:4,], axis=1)
         m1 = np.matrix(m1).reshape(3, 1)
         m2 = np.var(dataMat[1:4,], axis=1)
@@ -266,16 +256,17 @@ class ResistanceClassification:
 
 
     def shiftTime(self, tmMatrix):
-        # Shift time interval to [0: end of interval]
+        """
+         Shift time interval to [0: end of interval]
 
-        # Parameters
-        # ------
-        # tmMatrix :         time list
+         Parameters
+         ------
+         tmMatrix :         time list
 
-        # Returns
-        # ------
-        #       shifited time array starting from 0
-
+         Returns
+         ------
+                            shifited time array starting from 0
+        """
         tm = list(np.array(tmMatrix).reshape(-1,))
         cycle = 60
         end = 59.9
@@ -295,21 +286,23 @@ class ResistanceClassification:
 
 
     def plot(self, rawMat, dataMat, label, filename, flag):
-        # Plot function
+        """
+         Plot function
 
-        # Parameters
-        # ------
-        # rawMat :     raw data
-        # dataMat :    filtered data matrix
-        # label :      label
-        # filename:    file name
-        # flag:        0: plot both raw data and filtered data 1: plot filtered data
+         Parameters
+         ------
+         rawMat :           raw data
+         dataMat :          filtered data matrix
+         label :            label
+         filename:          file name
+         flag:              0: plot both raw data and filtered data 1: plot filtered data
 
-        # Returns
-        # ------
-        #       plots of original data, low pass filtered data and peak selection
-
+         Returns
+         ------
+                            length of the peak list
+        """
         peakList, timeList, peakIdx = self.detectPeaks(dataMat, mpd=120)
+        import matplotlib.pyplot as plt
         if flag == 0:
             plt.figure()
             plt.subplot(211)
@@ -355,17 +348,18 @@ class ResistanceClassification:
 
 
     def featureExtract(self, dataMat, clsNum):
-        # Feature Extraction
+        """
+         Feature Extraction
 
-        # Parameters
-        # ------
-        # dataMat :          5 x colNum data matrix
-        # clsNum :           class number
+         Parameters
+         ------
+         dataMat :          5 x colNum data matrix
+         clsNum :           class number
 
-        # Returns
-        # ------
-        #          1x13 feature vector containing normalized moments
-
+         Returns
+         ------
+                            1x13 feature vector containing normalized moments
+        """
         tmpFeatMat = self.moments(dataMat)
         featMat = tmpFeatMat.reshape(1, 12)
         tmpFeatArr = np.squeeze(np.array(featMat))
@@ -375,19 +369,21 @@ class ResistanceClassification:
 
 
     def classify(self, trainingFeat, testingFeat):
-        # classify the testing data by measuring cos theta = A.*B / (||A|| * ||B||)
+        """
+         classify the testing data by measuring cos theta = A.*B / (||A|| * ||B||)
 
-        # Parameters
-        # ------
-        # trainingFeat :           training feature matrix
-        # testingFeat :            testing feature matrix
+         Parameters
+         ------
+         trainingFeat :     training feature matrix
+         testingFeat :      testing feature matrix
 
-        # Returns
-        # ------
-        #     classification results from 0 to 11
-
+         Returns
+         ------
+                            classification results from 0 to 11
+        """
         res = []
         for i in range(trainingFeat.shape[0]):
+            import scipy.linalg as scialg
             meanSim = np.dot(trainingFeat[i][0:-1], testingFeat[0:-1])/(scialg.norm(trainingFeat[i][0:-1], 2)*scialg.norm(testingFeat[0:-1], 2))
             #stdSim = np.dot(trainingFeat[i][3:6], testingFeat[3:6])/(scialg.norm(trainingFeat[i][3:6], 2)*scialg.norm(testingFeat[3:6], 2))
             res.append(meanSim)
@@ -395,17 +391,18 @@ class ResistanceClassification:
 
 
     def calcAccuracy(self, clsRes, testingDataLabel):
-        # Calculate classification accuracy
+        """
+         Calculate classification accuracy
 
-        # Parameters
-        # ------
-        # clsRes      :         classification results
-        # testingData :         testing matrix
+         Parameters
+         ------
+         clsRes      :         classification results
+         testingData :         testing matrix
 
-        # Returns
-        # ------
-        #     classification accuracy
-
+         Returns               
+         ------
+                            classification accuracy and wrongly classified list
+        """
         cntCorrect = 0
         wrongCls = []
         for i in range(len(clsRes)):
@@ -419,16 +416,17 @@ class ResistanceClassification:
 
 
     def training(self, trainingData):
-        # Training stage
+        """
+         Training stage
 
-        # Parameters
-        # ------
-        # trainingData :            raw training data
+         Parameters
+         ------
+         trainingData :     raw training data
 
-        # Returns
-        # ------
-        #      12 x 13 training data feature matrix
-
+         Returns
+         ------
+                            12 x 13 training data feature matrix
+        """
         print 'Training '
         trainingFeatRowNum = 12; trainingFeatColNum = 13
         trainingFeatMat = np.zeros((trainingFeatRowNum, trainingFeatColNum))  # 12 x 13 feature matrix
@@ -438,6 +436,7 @@ class ResistanceClassification:
             # Read in data
             filteredTrainSig, noisyTrainSig = self.readInData(trainingData, clsNum)    # 5 x colNum matrices
             assert(filteredTrainSig.shape[0] == 5), "Row number of the training data is wrong"
+            import time
             time.sleep(.1)
             print '\b. ',
             sys.stdout.flush()
@@ -448,17 +447,18 @@ class ResistanceClassification:
 
 
     def testing(self, testingData, trainingFeatMat):
-        # Show testing results
+        """
+         Show testing results
 
-        # Parameters
-        # ------
-        # testingData :                   raw testing data
-        # trainingFeatMat :               training feature matrix
+         Parameters
+         ------
+         testingData :          raw testing data
+         trainingFeatMat :      training feature matrix
 
-        # Returns
-        # ------
-        #      testing results
-
+         Returns
+         ------
+                                testing results
+        """
         # testing features
         clsResList, testLabel = [], []
         tolClsNum = 12
@@ -476,17 +476,17 @@ class ResistanceClassification:
 
 
     def showResults(self, clsResList, testLabel):
-        # Show classification results
+        """
+         Show classification results
 
-        # Parameters
-        # ------
-        # clsResList :            classification results list
-        # testLabel  :            testing data label
+         Parameters
+         ------
+         clsResList :       classification results list
+         testLabel  :       testing data label
 
-        # Returns
-        # ------
-        #       display results
-
+         Returns
+         ------
+        """
         accuracy, wrongCls = self.calcAccuracy(clsResList, testLabel)
         print "Classification Accuracy is %.2f%s."  %(accuracy * 100, '%')
         print '\n'
@@ -501,30 +501,33 @@ class ResistanceClassification:
 
 
     def cosineSimilarityClf(self):
-        # Main Classification function
+        """
+         Main Classification function
 
-        # Parameters
-        # ------
+         Parameters
+         ------
 
-        # Returns
-        # ------
-        #       Show classification accuracy
-
+         Returns
+         ------
+        """
         # Checking arguments
         assert(len(sys.argv) == 3), 'Please type two arguments: training data name, testing data folder name'
         # Training
         trainingFeatMat = self.training(self.trainingData)
         # Testing
         result, label = [], []
+        import os
         os.chdir(self.testingDataFolder)
         print 'Classifying ... '
         totalReps = [0] * 12
         totalReps = np.array(totalReps)
+        import glob
         for testingData in glob.glob('*.csv'):
             try:
                 open(testingData, 'r')
             except IOError:
                 print 'Could not open the file ' + testingData + '\n'
+            import time
             time.sleep(.1)
             print '\t ' + testingData
             sys.stdout.flush()
@@ -537,9 +540,6 @@ class ResistanceClassification:
         self.showResults(result, label)
 
 
-#------------------------------------------------------------#
-#                 Run it from here                           #
-#------------------------------------------------------------#
 if __name__ == "__main__":
     import sys
     exercise = ResistanceClassification(sys.argv[1], sys.argv[2])
