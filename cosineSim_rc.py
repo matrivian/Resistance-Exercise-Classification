@@ -76,7 +76,6 @@ class ResistanceClassification:
          ------
                           Low pass filtered data in list
         """
-        import numpy as np
         sig = np.squeeze(np.asarray(rawSig)) 		# convert matrix to array
         #print sig.shape
         processedSig = np.r_[2*sig[0]-sig[winSize-1::-1],sig,2*sig[-1]-sig[-1:-winSize:-1]]
