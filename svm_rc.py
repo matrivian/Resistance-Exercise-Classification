@@ -22,7 +22,7 @@ class ResistanceClassification:
         self.folder = dataFolder
         self.totalClsNum = 12
         self.featureNum = 3
-        self.filterWindowSize = 91
+        self.filterWindowSize = 51
 
     def getClassname(self, label):
         """
