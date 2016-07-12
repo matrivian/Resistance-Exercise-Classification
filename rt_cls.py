@@ -182,6 +182,7 @@ class FeatureExtraction():
         Calculate four moments of one exercise
 
         data : input matrix and the dimension is rows number x 3
+        ex_dict : resistance exercises dictionary
         return : feature matrix 4x3 where, 4 : moments; 3 : x, y, z
         """
         m1 = np.mean(data, axis=0)
@@ -301,7 +302,6 @@ class NearestNeighbor:
 
         tr_filename : training dataset file name
         te_folder : testing dataset folder name
-        ex_dict : resistance exercises dictionary
         return : repetitions and predicted labels
         """
         tr_ft = self.training(tr_filename)        # training
@@ -334,7 +334,7 @@ class SvmRTClf:
         """
         Classification use svm
 
-        foldername : folder which contains all data
+        foldername : folder which contains both training and testing data
         return : classification accuracy and confusion matrix
         """
         all_te_label, est_label = [], []
@@ -413,6 +413,7 @@ class Results:
 
         te_label : acutal testing data label vector
         est_label : predicted label vector
+        ex_dict : resistance exercises of 12 classes
         """
         actual = np.array(te_label)
         est = np.array(est_label)
@@ -436,7 +437,6 @@ def load_data(filename, ex_dict, plot=False, cnt_reps=False):
     ex_dict : resistance exercises dictionary
     plot : change this to True if plot wanted
     cnt_reps : change this to True if counting repetitions of the exercises wanted
-
     return : time, raw data, label vectors and filtered data
     """
     time, label = [], []
@@ -470,6 +470,7 @@ def plot_ex(filename, tm, raw_data, filtered, label, ex_dict, plot_peak=False):
     """
     Plot exercises figures 
 
+    filename : file name of the exercise
     tm : time 
     raw_data : original un-filtered data
     filtered : low pass filtered data
@@ -577,6 +578,7 @@ def resistance_clf(clfr):
 
     else:
         raise AssertionError('Please type either nn or svm!') 
+
 
 if __name__ == '__main__':
     resistance_clf(sys.argv[1])
