@@ -557,8 +557,7 @@ def resistance_clf(clfr):
     """
     Classification of resistance exercises
 
-    nn_clf : nearest neighbor using cosine similarity 
-    smv_clf : support vector machine using rbf kernel
+    clfr : classifier which can be 'nn' or 'svm'
     """
 
     rt = {0: 'Bench_Press', 1: 'Shoulder_Press', 2: 'Bicep_Curls', 3: 'Upright_Rows',
