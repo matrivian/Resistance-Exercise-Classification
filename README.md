@@ -43,13 +43,13 @@ For nearest neighbor using cosine similarity:
 
   *python rt_cls.py nn training_set.csv /testing_set_folder/*
 
-    ![](./nn.png)
+![](./nn.png)
 
 For support vector machine:
 
   *python rt_cls.py svm /folder_containing_all_datasets/*
 
-    ![](./svm.png)
+![](./svm.png)
 
 ## Contact ##
 junguo AT boisestate DOT edu
