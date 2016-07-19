@@ -51,6 +51,16 @@ For support vector machine:
 
 ![](./svm.png)
 
+## Sample Plots ##
+
+![](./bicep.png)
+
+![](./lateral.png)
+
+![](./tricep.png)
+
+![](./upright.png)
+
 ## Contact ##
 junguo AT boisestate DOT edu
 
@@ -67,3 +77,4 @@ GPL v3 license
 1. How to see the plots of the accelerometers data?
 
     Go to load_data function and change parameter plot to True
+

@@ -207,7 +207,7 @@ class FeatureExtraction():
         """
         ft_mat = np.zeros((1, self.axises_num * self.moments_num))
         tm, data, label = load_data(
-            filename, ex_dict, plot=False, cnt_reps=False)
+            filename, ex_dict, plot=True, cnt_reps=False)
         cpr_label = []
         for ex_num in range(len(ex_dict)):
             ind = label == ex_num
@@ -520,8 +520,8 @@ def plot_ex(filename, tm, raw_data, filtered, label, ex_dict, plot_peak=False):
         if plot_peak:
             pd = PeakDetection(filtered[ind, :], tm[ind])
             pk_arr, tm_arr, pk_ind = pd.detect_peaks(filtered[ind, :])
-            plt.plot(tm_arr, pk_arr, 'k*', markersize=12)
-        plt.legend([fx, fy, fz], ['X', 'Y', 'Z'], bbox_to_anchor=(
+            pk_plt, = plt.plot(tm_arr, pk_arr, 'k*', markersize=12)
+        plt.legend([fx, fy, fz, pk_plt], ['X', 'Y', 'Z', 'Peak'], bbox_to_anchor=(
             1.01, 1), loc=2, borderaxespad=0., prop={'size': 8})
         plt.grid(True)
         plt.savefig(filename[:-4] + '_' + ex_dict[ex_num] + '.png')
