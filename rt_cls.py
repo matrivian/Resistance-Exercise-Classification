@@ -503,7 +503,7 @@ def plot_ex(filename, tm, raw_data, filtered, label, ex_dict, plot_peak=False):
         # filtered data
         plt.subplot(212)
         plt.xlabel('Time (s)')
-        plt.ylabel('Raw Acc Data (g)')
+        plt.ylabel('Filtered Acc Data (g)')
         maxX, maxY, maxZ = max(filtered[ind, 0]), max(
             filtered[ind, 1]), max(filtered[ind, 2])
         minX, minY, minZ = min(filtered[ind, 0]), min(
