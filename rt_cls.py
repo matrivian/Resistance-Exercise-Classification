@@ -23,6 +23,7 @@ import matplotlib.pyplot as plt
 from scipy.stats.mstats import moment
 from sklearn import svm
 from sklearn import metrics
+from sklearn.grid_search import GridSearchCV
 
 
 class PreProcessing:
@@ -356,8 +357,9 @@ class SvmRTClf:
                     all_tr_label += one_tr_label
             all_tr_ft = np.delete(all_tr_ft, (0), axis=0)
             # SVM training
-            C = 1.0           # SVM regularization parameter
-            clfr = svm.SVC(kernel='rbf', gamma=300, C=C)
+            param_grid = {'C': [1, 1e2, 5e2, 1e3, 5e3, 1e5],
+                          'gamma': [0.01, 0.1, 1, 10, 100, 300, 500, 1000]}
+            clfr = GridSearchCV(svm.SVC(kernel='rbf', class_weight='balanced'), param_grid)
             clfr.fit(all_tr_ft, all_tr_label)
             print 'Done Training.'
             # SVM prediction
@@ -365,6 +367,7 @@ class SvmRTClf:
             clf_res = clfr.predict(te_ft)
             # print clf_res
             est_label += res.convert_clf_result(clf_res, self.rt)
+            print clfr.best_estimator_
             print 'Done Classifying ' + te_filename[-11:] + '\n'
             all_te_label += range(12)
         est_label = np.array(est_label)
