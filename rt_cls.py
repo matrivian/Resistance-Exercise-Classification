@@ -12,12 +12,13 @@
  License: GPL3.0
 """
 
-import numpy as np
 import csv
 import os
 import glob
 import time
 import sys
+import numpy as np
+import seaborn as sn
 import scipy.linalg as scialg
 import matplotlib.pyplot as plt
 from scipy.stats.mstats import moment
@@ -68,11 +69,11 @@ class PreProcessing:
         end = 59.9
         if (shifted_time[-1] - shifted_time[0]) > 0:
             shift = shifted_time[0]
-            for i in range(len(shifted_time)):
+            for i in xrange(len(shifted_time)):
                 shifted_time[i] -= shift
         elif (shifted_time[-1] - shifted_time[0]) < 0:
             shift = shifted_time[0]
-            for i in range(len(shifted_time)):
+            for i in xrange(len(shifted_time)):
                 if shifted_time[i] >= shift and shifted_time[i] <= end:
                     shifted_time[i] -= shift
                 elif shifted_time[i] < shift:
@@ -95,7 +96,7 @@ class PeakDetection:
         mat : data matrix 
         Return: the index of largest variance
         """
-        var_coord = [abs(np.var(mat[:, i])) for i in range(3)]
+        var_coord = [abs(np.var(mat[:, i])) for i in xrange(3)]
         return var_coord.index(max(var_coord))
 
     def detect_range(self, data_vec):
@@ -110,35 +111,23 @@ class PeakDetection:
         sig_range = mean + 1.5 * var
         return sig_range
 
-    def detect_peaks(self, x, mpd=120, threshold=0):
+    def detect_peaks(self, mpd=120, threshold=0):
         """
         Peaks Detection Function
 
-        x : 1D array_like data
-        mpd : positive integer detect peaks that are at least separated by 
+        mpd: positive integer detect peaks that are at least separated by 
                 minimum peak distance (in number of data)
-        threshold : peaks - neighbors threshold 
-        Return : peaks lists, peaks time list, peaks indices 
+        threshold: peaks - neighbors threshold 
+        Return: peaks lists, peaks time list, peaks indices 
         """
         var_idx = self.find_largest_var(self.data)
         smoothed = np.array(self.data[:, var_idx])
         smoothed = np.atleast_1d(smoothed).astype('float64')
-        # print smoothed
         # find indices of all peaks
         dx = smoothed[1:] - smoothed[:-1]
-        # handle NaN's
-        indnan = np.where(np.isnan(smoothed))[0]
-        if indnan.size:
-            smoothed[indnan] = np.inf
-            dx[np.where(np.isnan(dx))[0]] = np.inf
         ine, ire, ife = np.array([[], [], []], dtype=int)
         ire = np.where((np.hstack((dx, 0)) <= 0) & (np.hstack((0, dx)) > 0))[0]
         ind = np.unique(np.hstack((ine, ire, ife)))
-        # handle NaN's
-        if ind.size and indnan.size:
-            # NaN's and values close to NaN's cannot be peaks
-            ind = ind[np.in1d(ind, np.unique(
-                np.hstack((indnan, indnan - 1, indnan + 1))), invert=True)]
         # first and last values of x cannot be peaks
         if ind.size and ind[0] == 0:
             ind = ind[1:]
@@ -151,10 +140,9 @@ class PeakDetection:
             ind = np.delete(ind, np.where(dx < threshold)[0])
         # detect small peaks closer than minimum peak distance
         if ind.size and mpd > 1:
-            ind = ind[np.argsort(smoothed[ind])][
-                ::-1]  # sort ind by peak height
+            ind = ind[np.argsort(smoothed[ind])][::-1]  # sort ind by peak height
             idel = np.zeros(ind.size, dtype=bool)
-            for i in range(ind.size):
+            for i in xrange(ind.size):
                 if not idel[i]:
                     # keep peaks with the same height if kpsh is True
                     idel = idel | (ind >= ind[i] - mpd) & (ind <= ind[i] + mpd) \
@@ -210,7 +198,7 @@ class FeatureExtraction():
         tm, data, label = load_data(
             filename, ex_dict, plot=True, cnt_reps=False)
         cpr_label = []
-        for ex_num in range(len(ex_dict)):
+        for ex_num in xrange(len(ex_dict)):
             ind = label == ex_num
             tmp_ft = self.calc_moments(data[ind, :], ex_dict)
             tmp_ft = tmp_ft.reshape(1, self.axises_num * self.moments_num)
@@ -233,7 +221,7 @@ class FeatureExtraction():
         tm, data, label = load_data(
             filename, ex_dict, plot=False, cnt_reps=False)
         cpr_label = []
-        for ex_num in range(len(ex_dict)):
+        for ex_num in xrange(len(ex_dict)):
             ind = label == ex_num
             tmp_ft = self.calc_moments(data[ind, :], ex_dict)
             ft_mat = np.vstack((ft_mat, tmp_ft))
@@ -275,7 +263,7 @@ class NearestNeighbor:
         return : which class (0-11) does the te_ft belong to
         """
         score = []
-        for i in range(tr_ft.shape[0]):
+        for i in xrange(tr_ft.shape[0]):
             sim_score = calc_similarity(tr_ft[i], te_ft)
             score += [sim_score]
         return score.index(max(score))
@@ -292,7 +280,7 @@ class NearestNeighbor:
         est_label = []
         ft = FeatureExtraction(self.axises_num)
         te_ft, te_cpr_label = ft.get_ft_nn(te_filename, ex_dict)
-        for ex_num in range(len(ex_dict)):
+        for ex_num in xrange(len(ex_dict)):
             tmp_res = self.predict_one_class(tr_ft, te_ft[ex_num])
             est_label += [tmp_res]
         return est_label, te_cpr_label
@@ -316,7 +304,7 @@ class NearestNeighbor:
             est_label_one, te_label_one = self.predict_one_file(
                 tr_ft, te_filename, self.rt)
             est_label += est_label_one
-            te_label += range(len(self.rt))
+            te_label += xrange(len(self.rt))
         print 'Done.'
         est_label = np.array(est_label)
         res = Results()
@@ -388,7 +376,7 @@ class Results:
         """
         ans = []
         st, end, interval = 0, 4, 4
-        for _ in range(len(ex_dict)):
+        for _ in xrange(len(ex_dict)):
             cnt = np.bincount(res[st:end].astype(int))
             if max(cnt) == 1:
                 ans.append(res[st].astype(int))
@@ -422,8 +410,8 @@ class Results:
         est = np.array(est_label)
         n = len(ex_dict)
         conf_mat = np.zeros((n, n))
-        for i in range(n):
-            for j in range(n):
+        for i in xrange(n):
+            for j in xrange(n):
                 conf_mat[i, j] = np.sum(
                     np.where(est == i, 1, 0) * np.where(actual == j, 1, 0))
         print 'Confusion Matrix is: \n'
@@ -456,7 +444,7 @@ def load_data(filename, ex_dict, plot=False, cnt_reps=False):
     # initialize the filter window size as 91
     prep = PreProcessing(91)
     filtered = np.zeros(raw_data.shape)
-    for i in range(3):
+    for i in xrange(3):
         # low-pass filter the raw data
         filtered[:, i] = prep.lpf(raw_data[:, i], prep.win_size)
     # tr_time = prep.shift_time(tr_tm)   # shift time
@@ -482,7 +470,7 @@ def plot_ex(filename, tm, raw_data, filtered, label, ex_dict, plot_peak=False):
     plot_peak : change this to True if peaks are wanted in the plot
     """
     print 'Plotting ... '
-    for ex_num in range(len(ex_dict)):
+    for ex_num in xrange(len(ex_dict)):
         ind = label == ex_num
         plt.figure()
         time.sleep(.01)
@@ -522,7 +510,7 @@ def plot_ex(filename, tm, raw_data, filtered, label, ex_dict, plot_peak=False):
         # plot peaks for data
         if plot_peak:
             pd = PeakDetection(filtered[ind, :], tm[ind])
-            pk_arr, tm_arr, pk_ind = pd.detect_peaks(filtered[ind, :])
+            pk_arr, tm_arr, pk_ind = pd.detect_peaks()
             pk_plt, = plt.plot(tm_arr, pk_arr, 'k*', markersize=12)
         plt.legend([fx, fy, fz, pk_plt], ['X', 'Y', 'Z', 'Peak'], bbox_to_anchor=(
             1.01, 1), loc=2, borderaxespad=0., prop={'size': 8})
@@ -542,10 +530,10 @@ def count_reps(time_vec, data, label, ex_dict):
     return : reps for each class
     """
     reps = np.zeros(len(ex_dict))
-    for ex_num in range(len(ex_dict)):
+    for ex_num in xrange(len(ex_dict)):
         ind = label == ex_num
         pd = PeakDetection(data[ind, :], time_vec[ind])
-        pk_arr, tm_arr, pk_ind = pd.detect_peaks(data[ind, :])
+        pk_arr, tm_arr, pk_ind = pd.detect_peaks()
         reps[ex_num] = len(pk_arr)
     return reps
 
