@@ -125,9 +125,7 @@ class PeakDetection:
         smoothed = np.atleast_1d(smoothed).astype('float64')
         # find indices of all peaks
         dx = smoothed[1:] - smoothed[:-1]
-        ine, ire, ife = np.array([[], [], []], dtype=int)
-        ire = np.where((np.hstack((dx, 0)) <= 0) & (np.hstack((0, dx)) > 0))[0]
-        ind = np.unique(np.hstack((ine, ire, ife)))
+        ind = np.where((np.hstack((dx, 0)) <= 0) & (np.hstack((0, dx)) > 0))[0]
         # first and last values of x cannot be peaks
         if ind.size and ind[0] == 0:
             ind = ind[1:]
@@ -144,12 +142,11 @@ class PeakDetection:
             idel = np.zeros(ind.size, dtype=bool)
             for i in xrange(ind.size):
                 if not idel[i]:
-                    # keep peaks with the same height if kpsh is True
+                    # keep peaks with the same height 
                     idel = idel | (ind >= ind[i] - mpd) & (ind <= ind[i] + mpd) \
                         & (smoothed[ind[i]] > smoothed[ind])
                     idel[i] = 0  # Keep current peak
-            # remove the small peaks and sort back the indices by their
-            # occurrence
+            # remove the small peaks and sort back the indices by their occurrence
             ind = np.sort(ind[~idel])
 
         peak_idx = [item for item in ind if smoothed[
