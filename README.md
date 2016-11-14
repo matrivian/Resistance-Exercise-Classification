@@ -14,6 +14,9 @@ Classification of twelve different resistance exercises using nearest neighbor (
 10. Forward walking lunges
 11. Calf raises
 
+## BibTex ##
+[BibTex](./resistance.bib)
+
 ## Programming Language ##
 [Python 2.7.x](https://www.python.org/)
 
@@ -77,4 +80,3 @@ GPL v3 license
 1. How to see the plots of the accelerometers data?
 
     Go to load_data function and change parameter plot to True
-
